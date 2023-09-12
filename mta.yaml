@@ -1,0 +1,52 @@
+_schema-version: '3.1'
+ID: ReporteDiario
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npx cds build --production
+modules:
+  - name: ReporteDiario-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: ReporteDiario-db
+      - name: ReporteDiario-auth
+
+  - name: ReporteDiario-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: ReporteDiario-db
+
+resources:
+  - name: ReporteDiario-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      config:
+        schema : CIO
+      service: hana
+      service-plan: hdi-shared
+  - name: ReporteDiario-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: reportediario
+        tenant-mode: dedicated
