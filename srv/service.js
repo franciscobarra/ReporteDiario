@@ -3,14 +3,14 @@ module.exports = cds.service.impl(srv => {
 
     // CRUD estándar: Manejador personalizado para CREAR un usuario
     srv.before('CREATE', 'Usuario', (data) => {
-        // ... tu lógica personalizada antes de crear un usuario ...
+        // ... se puede personalizar antes de crear un usuario ...
     });
 
     // CRUD estándar: Manejador personalizado para LEER un usuario
     srv.before('READ', 'Usuario', (data) => {
         console.log("Leer usuario");
         console.log(JSON.stringify(data.query));
-        // ... tu lógica personalizada después de leer un usuario ...
+        // ... se puede personalizar después de leer un usuario ...
     });
 
     srv.after('READ', 'Usuario', (data) => {
