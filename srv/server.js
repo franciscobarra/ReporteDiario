@@ -19,7 +19,7 @@ const cdsConfig = cds.env;
         app.use(passport.initialize()); // Añade un middleware que autentica cada solicitud, Si es exitosa, el objeto "user" se asjunta al "req"
         app.use((req, res, next) => {
             passport.authenticate('JWT', { session: false }, async (err, user, info) => {
-                    if(cdsConfig.auth.passport.strategy === 'mock'){ // Si es un usuario de prueba, saltar autentificación con los atributos del usuario del package.json
+                    if(cdsConfig.auth.passport.strategy === 'mock'){ // Si es una ejecución de prueba (cds watch), saltar autentificación con los atributos del usuario del package.json
                         user = cds.env.auth.passport.users.admin; // User admin
                     }
 
