@@ -18,16 +18,15 @@ const cdsConfig = cds.env;
     cds.on("bootstrap", app => {
         app.use(passport.initialize()); // Añade un middleware que autentica cada solicitud, Si es exitosa, el objeto "user" se asjunta al "req"
         app.use((req, res, next) => {
-            console.log(req.user)
             passport.authenticate('JWT', { session: false }, async (err, user, info) => {
-                if(cdsConfig.auth.passport.strategy === 'mock'){ // Si es un usuario de prueba, saltar autentificación
-                    req.user = cdsConfig.auth.passport.users.admin;
-                    console.log(cdsConfig.auth.passport.users)
-                }
+                    if(cdsConfig.auth.passport.strategy === 'mock'){ // Si es un usuario de prueba, saltar autentificación con los atributos del usuario del package.json
+                        user = cds.env.auth.passport.users.admin; // User admin
+                    }
+
+                    console.log(user);
                     const { Usuario, Rol, UsuarioRol } = cds.entities;
                     let rolNames = []
                     try {
-                        console.log(user);
                         const userUsuarioRolResults = await SELECT.from(`${Usuario.name} as u`)
                             .join(`${UsuarioRol.name} as ur`).on(`u.ID = ur.usuario_ID`)
                             .where({ 'u.correo': user.id });

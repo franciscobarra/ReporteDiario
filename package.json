@@ -31,19 +31,14 @@
       },
       "[development]": {
         "auth": {
-          "passport": {
             "strategy": "mock",
             "users": {
               "admin": {
                "password": "1234",
-                "id": "francisco barra",
-                "attr": {
-                    "email": "franciscobarra.sep@gmail.com"
-                },
+                "id": "franciscobarra.sep@gmail.com",
                 "roles": ["Token_Exchange"]
               }
             }
-          }
         }
       }
     },
