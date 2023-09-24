@@ -11,7 +11,8 @@
     "@sap/xsenv": "^4.0.0",
     "@sap/xssec": "^3",
     "express": "^4",
-    "passport": "^0"
+    "passport": "^0",
+    "jsonwebtoken" :"9.0.2"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
@@ -19,15 +20,35 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "deploy" : "cf deploy mta_archives/ReporteDiario_1.0.0.mtar -f --delete-services"
+    "deploy": "cf deploy mta_archives/ReporteDiario_1.0.0.mtar -f --update-services"
   },
   "cds": {
     "requires": {
       "db": "hana-cloud",
-      "auth": "xsuaa"
+      "uaa": {
+        "kind": "xsuaa",
+        "model": "xs-security.json"
+      },
+      "[development]": {
+        "auth": {
+          "passport": {
+            "strategy": "mock",
+            "users": {
+              "admin": {
+               "password": "1234",
+                "id": "francisco barra",
+                "attr": {
+                    "email": "franciscobarra.sep@gmail.com"
+                },
+                "roles": ["Token_Exchange"]
+              }
+            }
+          }
+        }
+      }
     },
-    "hana" : {
-      "deploy-format" : "hdbtable"
+    "hana": {
+      "deploy-format": "hdbtable"
     }
   }
 }
