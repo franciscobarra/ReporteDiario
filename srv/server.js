@@ -12,7 +12,7 @@ const xsuaa = xsenv.getServices({
         name: 'ReporteDiario-auth'
     }
 }).xsuaa; // Se obtiene la config del servicio xsuaa que está vinculado a la aplicación. Se espera que sea ReporteDiario-Auth
-const xsappname = xsuaa.xsappname // Nombre de la App
+const XSAPPNAME = xsuaa.xsappname // Nombre de la App
 
 passport.use(new xssec.JWTStrategy(xsuaa)); // Se configura el Passport para usar la estrategia JWT asociada al xsuaa definido anteriormente
 
@@ -57,7 +57,7 @@ const verificarRolAdministrador = (req, res, next) => {
 
     let jwtToken = readJwt(req)
 
-    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Administrador`)) {
+    if (jwtToken.scope && jwtToken.scope.includes(`${XSAPPNAME}.Administrador`)) {
         return next();
     }
 
@@ -69,11 +69,11 @@ const verificarRolAdministrador = (req, res, next) => {
 const verificarRolAnalista = (req, res, next) => {
     let jwtToken = readJwt(req)
 
-    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Administrador`)) {
+    if (jwtToken.scope && jwtToken.scope.includes(`${XSAPPNAME}.Administrador`)) {
         return next();
     }
 
-    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Analista`)) {
+    if (jwtToken.scope && jwtToken.scope.includes(`${XSAPPNAME}.Analista`)) {
         return next();
     }
 
@@ -84,13 +84,13 @@ const verificarRolAnalista = (req, res, next) => {
 const verificarRolProduccion = (req, res, next) => {
     let jwtToken = readJwt(req)
 
-    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Administrador`)) {
+    if (jwtToken.scope && jwtToken.scope.includes(`${XSAPPNAME}.Administrador`)) {
         return next();
     }
-    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Analista`)) {
+    if (jwtToken.scope && jwtToken.scope.includes(`${XSAPPNAME}.Analista`)) {
         return next();
     }
-    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Produccion`)) {
+    if (jwtToken.scope && jwtToken.scope.includes(`${XSAPPNAME}.Produccion`)) {
         return next();
     }
 
