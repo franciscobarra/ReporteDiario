@@ -6,6 +6,18 @@
     {
       "name": "uaa.user",
       "description": "UAA"
+    },
+    {
+      "name": "$XSAPPNAME.Administrador",
+      "description": "Administrador"
+    },
+    {
+      "name": "$XSAPPNAME.Analista",
+      "description": "Analista"
+    },
+    {
+      "name": "$XSAPPNAME.Produccion",
+      "description": "Produccion"
     }
   ],
   "attributes": [],
@@ -13,7 +25,36 @@
     {
       "name": "Token_Exchange",
       "description": "UAA",
-      "scope-references": ["uaa.user"]
+      "scope-references": [
+        "uaa.user"
+      ]
+    },
+    {
+      "name": "Administrador",
+      "description": "Administrador",
+      "scope-references": [
+        "uaa.user",
+        "$XSAPPNAME.Administrador",
+        "$XSAPPNAME.Analista",
+        "$XSAPPNAME.Produccion"
+      ]
+    },
+    {
+      "name": "Analista",
+      "description": "Analista",
+      "scope-references": [
+        "uaa.user",
+        "$XSAPPNAME.Analista",
+        "$XSAPPNAME.Produccion"
+      ]
+    },
+    {
+      "name": "Produccion",
+      "description": "Produccion",
+      "scope-references": [
+        "uaa.user",
+        "$XSAPPNAME.Produccion"
+      ]
     }
   ]
 }

@@ -5,68 +5,116 @@ const xssec = require("@sap/xssec"); // Módulo de seguridad de SAP que proporci
 const jwt = require('jsonwebtoken');
 const cdsConfig = cds.env;
 
-    xsenv.loadEnv(); // Funcion que carga las variables de entorno definidas en el archivo de "default-env.json" (para desarrollo local)
+xsenv.loadEnv(); // Funcion que carga las variables de entorno definidas en el archivo de "default-env.json" (para desarrollo local)
 
-    const xsuaa = xsenv.getServices({
-        xsuaa: {
-            name: 'ReporteDiario-auth'
-        }
-    }).xsuaa; // Se obtiene la config del servicio xsuaa que está vinculado a la aplicación. Se espera que sea ReporteDiario-Auth
+const xsuaa = xsenv.getServices({
+    xsuaa: {
+        name: 'ReporteDiario-auth'
+    }
+}).xsuaa; // Se obtiene la config del servicio xsuaa que está vinculado a la aplicación. Se espera que sea ReporteDiario-Auth
+const xsappname = xsuaa.xsappname
 
-    passport.use(new xssec.JWTStrategy(xsuaa)); // Se configura el Passport para usar la estrategia JWT asociada al xsuaa definido anteriormente
+passport.use(new xssec.JWTStrategy(xsuaa)); // Se configura el Passport para usar la estrategia JWT asociada al xsuaa definido anteriormente
 
-    cds.on("bootstrap", app => {
-        app.use(passport.initialize()); // Añade un middleware que autentica cada solicitud, Si es exitosa, el objeto "user" se asjunta al "req"
-        app.use((req, res, next) => {
-            passport.authenticate('JWT', { session: false }, async (err, user, info) => {
-                    if(cdsConfig.auth.passport.strategy === 'mock'){ // Si es una ejecución de prueba (cds watch), saltar autentificación con los atributos del usuario del package.json
-                        user = cds.env.auth.passport.users.admin; // User admin
-                    }
+cds.on("bootstrap", app => {
+    app.use(passport.initialize());
 
-                    console.log(user);
-                    const { Usuario, Rol, UsuarioRol } = cds.entities;
-                    let rolNames = []
-                    try {
-                        const userUsuarioRolResults = await SELECT.from(`${Usuario.name} as u`)
-                            .join(`${UsuarioRol.name} as ur`).on(`u.ID = ur.usuario_ID`)
-                            .where({ 'u.correo': user.id });
-                        if (userUsuarioRolResults && userUsuarioRolResults.length > 0) {
+    if (cdsConfig.auth.passport.strategy === 'mock') {
+        user = cds.env.auth.passport.users.admin;
+        return
+    }
 
-                            const rolIds = userUsuarioRolResults.map(result => result.rol_ID);
-                            const rolesResults = await SELECT.from(`${Rol.name} as r`)
-                                .where({ 'r.ID': { in: rolIds } })
-                                .columns(`r.nombre`)
-                            rolNames = rolesResults.map(result => result.nombre);
-                        }
-                    } catch (error) {
-                        console.error("Error al ejecutar la consulta -- ROL:", error.message);
-                    }
-                    if (!rolNames.includes('ADMIN')) {
-                        return res.status(403).json({ message: 'Autenticación fallida.' });
-                    }
-                    if (err) {
-                        return next(err);
-                    }
-                    if (!user) {
-                        return res.status(402).json({ message: "Unauthorized" });
-                    }
-                    req.user = user;
-                    next();
-                
-            })(req, res, next);
-        });
+    app.use((req, res, next) => {
+        
+        passport.authenticate('JWT', { session: false }, async (err, user, info) => {
+            
+            const jwtToken = readJwt(req);
+
+            if (jwtToken) {
+                console.log("===> JWT: scopes: " + jwtToken.scope);
+                console.log("===> JWT: client_id: " + jwtToken.client_id);
+                console.log("===> JWT: user: " + jwtToken.user_name);
+            }
+
+            if (err) {
+                return next(err);
+            }
+            if (!user) {
+                return res.status(402).json({ message: "Unauthorized" });
+            }
+            req.user = user;
+            next();
+        })(req, res, next);
     });
 
-// Función para verificar roles y derivar a diferentes funciones
-/*function checkRole(role) {
-    return function (req, res, next) {
-        if (req.user && req.authInfo.checkLocalScope(role)) {
-            next();
-        } else {
-            res.status(403).json({ message: "Forbidden" });
-        }
-    };
-}*/
+    app.use('/Administrador', verificarRolAdministrador);
+    app.use('/Analista', verificarRolAnalista);
+    app.use('/Produccion', verificarRolProduccion);
+});
 
+// Middleware para verificar el rol de Administrador
+const verificarRolAdministrador = (req, res, next) => {
+
+    let jwtToken = readJwt(req)
+
+    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Administrador`)) {
+        return next(); // permite el acceso
+    }
+
+    return res.status(403).json({ message: 'Acceso denegado' });
+
+};
+
+// Middleware para verificar el rol de Analista
+const verificarRolAnalista = (req, res, next) => {
+    let jwtToken = readJwt(req)
+
+    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Administrador`)) {
+        return next(); // permite el acceso
+    }
+
+    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Analista`)) {
+        return next(); // permite el acceso
+    }
+
+    return res.status(403).json({ message: 'Acceso denegado' });
+};
+
+// Middleware para verificar el rol de Producción
+const verificarRolProduccion = (req, res, next) => {
+    let jwtToken = readJwt(req)
+
+    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Administrador`)) {
+        return next(); // permite el acceso
+    }
+
+    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Analista`)) {
+        return next(); // permite el acceso
+    }
+
+    if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Produccion`)) {
+        return next(); // permite el acceso
+    }
+
+    return res.status(403).json({ message: 'Acceso denegado' });
+
+};
+
+const readJwt = function (req) {
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+        const theJwtToken = authHeader.substring(7);
+        if (theJwtToken) {
+            console.log("===> JWT Token: " + theJwtToken);
+            const jwtBase64Encoded = theJwtToken.split(".")[1];
+            if (jwtBase64Encoded) {
+                const jwtDecoded = Buffer.from(jwtBase64Encoded, "base64").toString(
+                    "ascii"
+                );
+                return JSON.parse(jwtDecoded);
+            }
+        }
+    }
+};
 
 module.exports = cds.server;

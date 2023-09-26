@@ -20,7 +20,9 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "deploy": "cf deploy mta_archives/ReporteDiario_1.0.0.mtar -f --update-services"
+    "deploy": "cf deploy mta_archives/ReporteDiario_1.0.0.mtar -f --delete-services",
+    "deploy:update": "cf deploy mta_archives/ReporteDiario_1.0.0.mtar -f --update-services && npm run cf restart ReporteDiario-srv",
+    "deploy:db": "cf push ReporteDiario-db-deployer"
   },
   "cds": {
     "requires": {
