@@ -58,7 +58,7 @@ const verificarRolAdministrador = (req, res, next) => {
     let jwtToken = readJwt(req)
 
     if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Administrador`)) {
-        return next(); // permite el acceso
+        return next();
     }
 
     return res.status(403).json({ message: 'Acceso denegado' });
@@ -70,11 +70,11 @@ const verificarRolAnalista = (req, res, next) => {
     let jwtToken = readJwt(req)
 
     if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Administrador`)) {
-        return next(); // permite el acceso
+        return next();
     }
 
     if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Analista`)) {
-        return next(); // permite el acceso
+        return next();
     }
 
     return res.status(403).json({ message: 'Acceso denegado' });
@@ -85,15 +85,13 @@ const verificarRolProduccion = (req, res, next) => {
     let jwtToken = readJwt(req)
 
     if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Administrador`)) {
-        return next(); // permite el acceso
+        return next();
     }
-
     if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Analista`)) {
-        return next(); // permite el acceso
+        return next();
     }
-
     if (jwtToken.scope && jwtToken.scope.includes(`${xsappname}.Produccion`)) {
-        return next(); // permite el acceso
+        return next();
     }
 
     return res.status(403).json({ message: 'Acceso denegado' });
