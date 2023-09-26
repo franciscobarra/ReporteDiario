@@ -12,7 +12,7 @@ const xsuaa = xsenv.getServices({
         name: 'ReporteDiario-auth'
     }
 }).xsuaa; // Se obtiene la config del servicio xsuaa que está vinculado a la aplicación. Se espera que sea ReporteDiario-Auth
-const xsappname = xsuaa.xsappname
+const xsappname = xsuaa.xsappname // Nombre de la App
 
 passport.use(new xssec.JWTStrategy(xsuaa)); // Se configura el Passport para usar la estrategia JWT asociada al xsuaa definido anteriormente
 
@@ -25,9 +25,9 @@ cds.on("bootstrap", app => {
     }
 
     app.use((req, res, next) => {
-        
+
         passport.authenticate('JWT', { session: false }, async (err, user, info) => {
-            
+
             const jwtToken = readJwt(req);
 
             if (jwtToken) {
